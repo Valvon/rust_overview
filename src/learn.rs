@@ -226,7 +226,7 @@ fn match_statement(){
             7..=8 => println!("High {}", i), // range: 2..4 is not allowed here, has to be 2..=4 
             i if i > 8 => println!("Very High {}", i), // match Guard
             _ => println!("Anything else"), // catch else, needs to be included!
-//          other => println!("Number {}", other)  // takes the missing case but also gives it an accessable variable name
+//          other => println!("Number {}", other)  // takes the missing case but also binds it to accessable variable name // Binding
         }
     }
 
@@ -395,6 +395,9 @@ fn options(){
     let some_char = Some('e');
     let absent_number: Option<i32> = None;
 
+    some_number.is_none(); // false
+    some_number.is_some(); // true
+
     // We cannot add Some(value) with value
     let sum = some_number + 4; // this fails
 }
@@ -408,14 +411,166 @@ fn realistic_options(option : Option<i32>) -> Option<i32> {
         None => Some(0), // If the Option holds no value, return 0
     }
 }
+
+//      Result<>T
+    // T and E are generics. T can contain any type of value, E can be any error.
+    //enum Result<T, E> { 
+    //    Ok(T),
+    //   Err(E),
+    //}
+
+fn result_enum(){
+    let success  : Result<i32, i32>= Ok(45); // types need to be defined
+    let error : Result<i32, i32> = Err(0);
+
+    success.is_ok(); // true
+    success.is_err(); // false
+
+    // also for Options!!
+    // not good to use
+    let value = success.unwrap();  // panics if success is Err() or None
+    let value2 = success.expect("Error message"); // same as unwrap with a message
+    let value3 = success.expect_err("OK error message"); // panics if success is Ok() or Some()
+
+    // Better use these
+    let value4 = success.unwrap_or(0);  // if there is an error, use the given value instead of panicking
+    let value5 = success.unwrap_or_default(); // if there is an error, use the default value of the data type
+    let value6 = success.unwrap_or_else(|_| 16); // if there is an error, evalutate the Closure and return that value
+}
+
+fn result_example(i : Result<i32, i32>) -> Result<i32, i32> {
+    match i {
+        Ok(i) => {
+            println!("{}", i);
+            Ok(i*2)
+        }
+        Err(..) => {
+            println!("Error");
+            Err(1)
+        }
+    }
+}
+
 /*
 Pattern Matching
 */
 
-// Ownership and Borrowing
+fn pattern_matching(){
+    struct Point {
+        x: i32,
+        y: i32,
+    }
+    let p = Point { x: 0, y: 7 };
+    let Point { x: a, y: b } = p; // from now on, a and b are accessible as the values of point p
+    // matching the structure of Point with variables to an instance
 
+
+    // we've mostly handled this already, but there are some edge cases
+    let x = Some(5);
+    let y = 10;
+
+    match x {
+        Some(50) => println!("Got 50"),
+        Some(y) => println!("Matched, y = {y}"), // This Statement shadows the outer "y", it will not use y as value 10
+        _ => println!("Default case, x = {:?}", x),
+    }
+
+    println!("at the end: x = {:?}, y = {y}", x); // But this will print x= 5 and y = 10, as the scope of y (in match statement) ended
+}
+
+// Ownership and Borrowing was already explained, see above
+// Guards, Ranges and Bindings were also explained above
+
+//      Decompose Types ???
+// when will data be dropped?
+fn decomposing(){
+    enum Broker {
+        Neobroker {name: String},
+        BankDepot(String, i32),
+    }
+     // Neobroker Dropped once the condition has been evaluated
+    if Neobroker("If condition").0 == "If condition" {
+        // Neobroker Dropped at the end of the block
+       Neobroker("If body").0
+    }
+    match Neobroker("Dropped at end of match") {
+        b if b.0 == "Nothing" => (), // drop
+        _ => () // drop
+    }
+
+    loop {
+        // Tuple expression doesn't finish evaluating so operands drop in reverse order
+        (
+            Neobroker("Outer tuple first"),
+            Neobroker("Outer tuple second"),
+            (
+                Neobroker("Inner tuple first"),
+                Neobroker("Inner tuple second"),
+                break, // now drop in reverse
+            ),
+            Neobroker("Never created"),
+        );
+    }
+
+    
+    {   // SPECIAL case
+        let x = &mut 0;
+        // Usually a temporary would be dropped by now, but the temporary for `0` lives
+        // to the end of the block.
+        println!("{}", x);
+    }
+
+    // The temporary that stores the result of `temp()` only lives until the
+    // end of the let statement in these cases.
+    let x = Some(&temp());         // ERROR
+    let x = (&temp()).use_temp();  // ERROR
+}
+
+
+//      Definition Refutability
+fn refutability() {
+    let some_value = None;
+    let Some(x) = some_value; // this gives an error, as the Patterns don't match
+    let (x,y) = (1,2,3); // also doesn't match
+
+    // handle these Problems
+    if let Some(x) = some_value { // if patterns match, print the value, else, do nothing
+        println!("{}", x);
+    }
+
+    // example of how to handle possibly unmatching types
+    enum Color {
+        Rgb(i32, i32, i32),
+        Hsv(i32, i32, i32),
+    }
+    
+    enum Message {
+        Quit,
+        Move { x: i32, y: i32 },
+        Write(String),
+        ChangeColor(Color),
+    }
+    
+    fn main() {
+        let msg = Message::ChangeColor(Color::Hsv(0, 160, 255));
+    
+        match msg {
+            Message::ChangeColor(Color::Rgb(r, g, b)) => {
+                println!("Change color to red {r}, green {g}, and blue {b}");
+            }
+            Message::ChangeColor(Color::Hsv(h, s, v)) => {
+                println!("Change color to hue {h}, saturation {s}, value {v}")
+            }
+            _ => (),
+        }
+    }
+
+}
 /*
 Collections
+*/
+
+/*
 Iterators
 Struct String
 Generics and Traits
