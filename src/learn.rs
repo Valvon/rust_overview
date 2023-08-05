@@ -6,7 +6,7 @@ fn data_types(){
     let int : i32 = 1;
     // types are inferred, don't need to annotate
     // mutability needs to be declared
-    let mut int2 = 2;
+    let mut int2 = 2_000_456; // _ for readability
 
     let float : f32 = 2.4;
     let boolean1: bool = true;
@@ -18,31 +18,13 @@ fn data_types(){
     int2 += 1;
 }
 
-// create own data types with Struct
-struct Fish {
-    age : i32,
-    species : String
-}
 
-// create Traits
-trait Swimming {
-    fn swim(&self){
-        println!("Swimming!");
-    }
-} 
-
-// and implement them
-impl Swimming for Fish {
-    fn swim(&self){
-        println!("Swimming {}!", self.species);
-}
-    
-}
 
 /*
 Variablen und Operationen 
 */
-fn operations(){
+
+fn operations() -> i32 { //  you can also have a return type declared
     let int1 = 45;
     let int2 = 32;
 
@@ -52,6 +34,8 @@ fn operations(){
     print!("{}", int1 / int2);
     print!("{}", int1 * int2);
     print!("{}", int1 % int2);
+
+    5 // returned value
 }
 
 fn shadowing_and_scope(){
@@ -166,9 +150,271 @@ fn clone_trait(){
 
 
 /*
-Kontrollstrukturen und Schleifen
-Structs, Enums
+        Kontrollstrukturen und Schleifen
+
+*/
+
+fn if_else_decisons(){
+    let n = 5;
+    if 1 == n {
+        n+= 2;
+    } else if n < 6 {
+        n -= 1;
+    } else {
+        n = n + 3;
+    }
+}
+
+fn infinite_loop() {
+    let mut counter = 0;
+    loop {
+        count += 1;
+
+        if count == 3 {
+            println!("three");
+            continue; // Skip the rest of this iteration
+        }
+
+        if count == 5 {
+            println!("OK, that's enough");
+            break; // Exit this loop
+        }
+    }
+}
+
+
+fn while_loop(){
+    let mut n = 0;
+    while n < 5 {
+        println!("{}", n);
+        n += 1;
+    }
+}
+
+fn for_loop(){
+    for i in 1..100{
+        println!("{}", i) // prints until 99
+    }
+
+    for i in 1..=100{
+        println!("{}", i) // prints until 100
+    }
+
+    let mut names = vec!["Bob", "Frank", "Ferris"];
+    for name in names.iter(){   
+        println!("{}", name); // "Bob Frank Ferris"
+    }
+
+    for name in names.into_iter(){ // this iterator consumes the collection. It will not be available after this iteration
+        println!("{}", name); 
+    }
+    // println!("{}", names[0]);  will FAIL! because into_iter takes ownership
+
+
+    for name in names.iter_mut(){ // this iterator allows mutable borrowing of each element
+        *name = "ahahaha";
+        println!("{}", name); 
+    }
+}
+
+//      Match
+fn match_statement(){
+    for i in 0..10{
+        match i {
+            0 => println!("low"),
+            2 | 4 | 6 => println!("low and even"), // 2 or 4 or 6
+            7..=8 => println!("High {}", i), // range: 2..4 is not allowed here, has to be 2..=4 
+            i if i > 8 => println!("Very High {}", i), // match Guard
+            _ => println!("Anything else"), // catch else, needs to be included!
+//          other => println!("Number {}", other)  // takes the missing case but also gives it an accessable variable name
+        }
+    }
+
+    let boolean = true;
+    // Match is an expression too, can assing values
+    let binary = match boolean {
+        false => 0, // 0 returned (to binary)
+        true => 1, // 1 returned
+    };
+    println!("{}", binary); // 1
+
+
+    let triple = (0, -2, 3);
+   
+    // Match TUPLE
+    match triple {
+        // Destructure the second and third elements
+        (0, y, z) => println!("First is `0`, `y` is {:?}, and `z` is {:?}", y, z),
+        (1, ..)  => println!("First is `1` and the rest doesn't matter"),
+        (.., 2)  => println!("last is `2` and the rest doesn't matter"),
+        (3, .., 4)  => println!("First is `3`, last is `4`, and the rest doesn't matter"), // `..` can be used to ignore the rest of the tuple
+        _      => println!("It doesn't matter what they are"), // `_` means don't bind the value to a variable
+        
+    }
+
+    // match ENUMS
+    enum Color {
+        // These 3 are specified solely by their name.
+        Red,
+        Blue,
+        Green,
+    }
+    let color = Color::RGB(122, 17, 40);
+    match color {
+        Color::Red   => println!("The color is Red!"),
+        Color::Blue  => println!("The color is Blue!"),
+        Color::Green => println!("The color is Green!"),
+    }
+
+
+    // match STRUCTS
+    struct Foo {
+        x: (u32, u32),
+        y: u32,
+    }
+
+    let foo = Foo { x: (1, 2), y: 3 };
+    match foo {
+        Foo { x: (1, b), y } => println!("First of x is 1, b = {},  y = {} ", b, y),
+        Foo { y: 2, x: i } => println!("y is 2, i = {:?}", i),
+        // you can destructure structs and rename the variables,
+        // the order is not important
+    }
+}
+
+fn if_let(){
+    let number = Some(7);
+    let letter: Option<i32> = None;
+
+    // The `if let` construct reads: "if `let` destructures `number` into
+    // `Some(i)`, evaluate the block (`{}`).
+    if let Some(i) = number {
+        println!("Matched {:?}!", i);
+    } 
+    // If you need to specify a failure, use an else:
+    if let Some(i) = letter {
+        println!("Matched {:?}!", i);
+    } else {
+        println!("Didn't match a number. Let's go with a letter!"); // Destructure will fail and print this
+    }
+}
+
+fn while_let(){
+   
+        // Make `optional` of type `Option<i32>`
+        let mut optional = Some(0);
+    
+        // This reads: "while `let` destructures `optional` into
+        // `Some(i)`, evaluate the block (`{}`). Else `break`.
+        while let Some(i) = optional { // aka as long as optional is equivalent to Some with any i as value.
+            if i > 9 {
+                println!("Greater than 9, quit!");
+                optional = None;
+            } else {
+                println!("`i` is `{:?}`. Try again.", i);
+                optional = Some(i + 1);
+            }
+        }
+}
+
+
+/*
+        Structs, Enums
+*/
+fn this_struct(){
+    // create own data types with Struct
+    struct Fish {
+        age : i32,
+        species : String
+    }
+
+    // create Traits
+    trait Swimming {
+        fn swim(&self){
+            println!("Swimming!");
+        }
+    } 
+
+    // and implement them
+    impl Swimming for Fish {
+        fn swim(&self){
+            println!("Swimming {}!", self.species);
+        }  
+    }
+}
+
+//      Enums
+fn this_enum(){
+    enum Store {
+        Online,
+        Local,
+        Brand,
+        PopUp
+    }
+
+    let store : Store = Online;
+    match store {
+        Store::Online => println!("Beep Boop"),
+        Store::Local => println!("Cash please!"),
+    }
+
+    // enums may hold values
+    enum Broker {
+        Neobroker {name: String},
+        BankDepot(String, i32),
+    }
+    let broker1 : Broker = Broker::Neobroker{name: String::from("Trade Republic")};
+    let broker1 : Broker = Broker::BankDepot(String::from("Deutsche Bank"), 42);
+
+    // we can also define methods for enums
+    impl Broker {
+        fn buyIn(){
+            println!("Buy, Buy, Buy!")
+        }
+
+        fn sellOut(&self){
+        match self {
+            Broker::Neobroker{..} => println!("Sell!!!!"),
+            _ => ()
+            
+        }
+        }   
+    }
+    broker1.sellOut() // Sell!!
+}
+
+
+//      Option<T>()
+    // enum Option<T> {
+    //    None,
+    //   Some(T),
+    //}
+
+fn options(){
+    let some_number = Some(5);
+    let some_char = Some('e');
+    let absent_number: Option<i32> = None;
+
+    // We cannot add Some(value) with value
+    let sum = some_number + 4; // this fails
+}
+
+fn realistic_options(option : Option<i32>) -> Option<i32> {
+    match option {
+        Some(i) => { // if the Option hold a value, return it incremented
+            println!("The number is {}", i);
+            Some(i+1)
+        },
+        None => Some(0), // If the Option holds no value, return 0
+    }
+}
+/*
 Pattern Matching
+*/
+
+// Ownership and Borrowing
+
+/*
 Collections
 Iterators
 Struct String
@@ -200,3 +446,14 @@ use rand::Rng;
     let mut rng = rand::thread_rng();
     let mut n = rng.gen::<u32>;
  }
+
+ // Type name
+ fn print_type_of<T>(identifier: &str, _: &T) {
+    println!("The type of '{identifier}' is '{}'", std::any::type_name::<T>())
+}
+
+fn main() {
+    let my_variable=1_0;
+    print_type_of("my_variable", &my_variable);
+}
+ 
