@@ -805,11 +805,11 @@ impl<T> Deref for MyBox<T> {
 }
 
     /* 
-Fehlerbehandlung
+Fehlerbehandlung TODO
 */
 
 /*
-Lifetime
+Lifetime TODO
 */
 
 /*
@@ -855,15 +855,14 @@ fn sort(){
 
     list.sort_by_key(|r| r.width);
 }
-
 // another example is found at iterators with filter() and map()
 
 
 /*
 Smart Pointers
 */
-// Ownership and Borrowing ? what changes?`
-// Smart pointers are pointers but also have additional metadata and capabilitie
+// Ownership and Borrowing ? Some things change.
+// Smart pointers are pointers but also have additional metadata and capabilities
 
 // Recursive Types with Box
 // Box<T> for allocating values on the heap
