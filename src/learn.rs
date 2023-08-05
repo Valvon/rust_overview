@@ -199,22 +199,6 @@ fn for_loop(){
     for i in 1..=100{
         println!("{}", i) // prints until 100
     }
-
-    let mut names = vec!["Bob", "Frank", "Ferris"];
-    for name in names.iter(){   
-        println!("{}", name); // "Bob Frank Ferris"
-    }
-
-    for name in names.into_iter(){ // this iterator consumes the collection. It will not be available after this iteration
-        println!("{}", name); 
-    }
-    // println!("{}", names[0]);  will FAIL! because into_iter takes ownership
-
-
-    for name in names.iter_mut(){ // this iterator allows mutable borrowing of each element
-        *name = "ahahaha";
-        println!("{}", name); 
-    }
 }
 
 //      Match
@@ -569,29 +553,392 @@ fn refutability() {
 /*
 Collections
 */
+// stack, appendable array, resizable array
+ fn vectors() {
+    let mut vector = vec![1,2,3,4,5,9];
+    let vector2 = vec![80,35,658];
+    vector.extend(vector2); // append to it
 
+    let vector3 : Vec<String> = Vec::new();
+
+ }
+
+ use std::collections::HashMap;
+fn hash_map() {
+    let mut reviews = HashMap::<String, String>::new(); // type can also be inferred
+    reviews.insert(
+        "Adventures of Huckleberry Finn".to_string(),
+        "My favorite book.".to_string(),
+    );  
+    reviews.insert(
+        "Grimms' Fairy Tales".to_string(),
+        "Masterpiece.".to_string(),
+    );
+    reviews.insert(
+        "Pride and Prejudice".to_string(),
+        "Very enjoyable.".to_string(),
+    );
+    reviews.len(); // length
+
+    reviews.remove("Pride and Prejudice"); // removes Element with key "Pri.."
+    reviews.contains_key("Pride and Prejudice"); // now false, was true before
+
+    let to_find  = ["Pride and Prejudice", "Adventures of Huckleberry Finn"];
+    for &book in &to_find { // borrow because else it would be consumed, in this case with &str that has copy trait it is not necessary
+        match reviews.get(book) {
+            Some(review) => println!("{book}: {review}"),
+            None => println!("{book} is unreviewed.")
+        }
+    }
+
+    let key = reviews.entry("Masterpiece"); // gets all keys to the entry
+}
 /*
 Iterators
-Struct String
-Generics and Traits
 */
-/* 
-Fehlerbehandlung
-*/
+fn iterators(){
+    let mut names = vec!["Bob", "Frank", "Ferris"];
+    for name in names.iter(){   
+        println!("{}", name); // "Bob Frank Ferris"
+    }
 
-//          Options
-// can be None or Some(value) with value being the content 
-fn checked_result() {
+    for name in names.into_iter(){ // this iterator consumes the collection. It will not be available after this iteration
+        println!("{}", name); 
+    }
+    // println!("{}", names[0]);  will FAIL! because into_iter takes ownership
+
+
+    for name in names.iter_mut(){ // this iterator allows mutable borrowing of each element
+        *name = "ahahaha"; // value can be changed
+        println!("{}", name); 
+    }
+    // iterators can be used very comfortably with map/filter and collect
+    // filter() will keep the value if the closure inside evaluates to true
+    let names1 : Vec<&str> = names.iter().filter(
+        |name| match name.chars().next() {
+            Some(i) => !(i == 'B'),
+            None => true,
+    }).cloned().collect(); // we need to clone, because filter returns an iterator over references to elements of the original iterator, so we receive &&str not &str
+
+
+    // map() -> work with values and return them (potentially modified) as a copied iterator
+    // collect() the whole iterator
+    let mut names2 : Vec<String> = names1.iter().map(|name| name.to_string()).collect();
+
+    for name in names.iter_mut(){ // this iterator allows mutable borrowing of each element
+        let other = "no way its you, ";
+        *name = format!("{}{}", other, name); // format! returns a String not str (hence the String::from in the vector declaration)
+        println!("{}", name); 
+    }
+
 
 }
 
 /*
-Lifetime
-Closures
-Smart Pointers
-OOp
-
+Struct String
 */
+fn string_basics(){
+    // A String is basically a Vec<T>
+    let mut s = String::new();
+    s = "something".to_string();
+    let a = String::from("Hello");
+
+    //append
+    s.push_str(" Yo");
+    s.push('u');
+    println!("s is {s}");
+
+    // concatenation
+    // let s3 = s + &a; // s is consumed
+    let s3 = format!("{s}-{a}"); // much nicer, takes references and doesnt consume
+    println!("{s3}");
+
+    // don't acces with [0] but with a range to create a slice
+    let b = &s3[0..4];
+    println!("{b}"); // "some"
+
+    let c = b.bytes();
+    println("{c}");
+}
+
+/*
+Generics and Traits
+*/
+
+//      Polymorphism
+//      dyn-Keyword TODO
+
+//      Generic Type
+fn generic_highest(list : &[T]) -> &T{ // This won't compile, just to show concept
+    let mut highest = &list[0];
+
+    for item in list {
+        if highest < item { // compare the Types (they need to implement the comparison)
+            highest = item;
+        }
+    }
+    highest
+}
+//      Traits
+pub trait Summary { // basically an interface with possible default behaviour
+    fn summarize(&self) -> String { // default implementation of the method
+        String::from("Read more here!");        
+    }
+}
+
+pub struct Newspaper{
+    pub headline : String,
+    pub story : String,
+}
+
+impl Summary for Newspaper{
+    fn summarize(&self) -> String { // implement a method from the trait specifically
+        format!("{}", self.headline[])
+    }
+}
+
+        // Sub-traits, inheritance
+// if  a type implements Summary it must implement Display
+trait Summary: Display {}
+
+// as in Conditional Trait Implementation, you can use that for Inheritance
+// start a hierarchy where all types that impl C have Summary and Display...etc.
+impl <T: Summary + Display> C for T{
+
+}
+
+        // Trait-Bounds
+// this function needs item to implement Summary
+fn needs_trait_short(item : &impl Summary) {
+    println!("{}", item.summarize());
+}
+
+// useful if many items use this trait
+fn needs_trait<T: Summary>(item : &T, item2: &T) {
+    println!("{}", item.summarize());
+}
+
+// multiple traits
+fn needs_two_traits(item: &(impl Summary + Display)) {
+}
+fn needs_two_traits_too<T: Summary + Display>(item: &T) {
+}
+
+// can be more clear with: 
+fn needs_two_traits_clear<T, Uy>(item: &T, item2 : &U) -> i32
+where // <T: Summary + Display, U: Summary + Clone>)
+    T: Summary + Display,
+    U: Summary + Clone,
+    { 
+        return 5;
+}
+
+// returned Elements may implement a trait 
+// WATCH OUT, you can only return a single type here, an if else with different types that implement the trait is not allowed
+fn returns_summarizable() -> impl Summary {
+    Newspaper{
+        headline : String::from("You won't believe it"),
+        story : String::from("Omg I like the game so much I have to..")
+    }
+}
+        // Conditional Implementation
+
+struct Pair<T> {
+    x: T,
+    y: T,
+}
+
+impl<T> Pair<T> {
+    fn new(x: T, y: T) -> Self {
+        Self { x, y }
+    }
+}
+ // methods defined within this impl block will be available for any instance of Pair where the type parameter T implements both the Display and PartialOrd traits.
+impl<T: Display + PartialOrd> Pair<T> {
+    fn cmp_display(&self) {
+        if self.x >= self.y {
+            println!("The largest member is x = {}", self.x);
+        } else {
+            println!("The largest member is y = {}", self.y);
+        }
+    }
+}
+
+// impl ToString for any type that implements Display trait
+ impl<T: Display> ToString for T {
+}       
+        // Copy,Clone,Display,Debug
+// COPY trait is for types whose values can be duplicated simply by copying bits.
+// is used by assignments like let x = y; and not explicitly
+struct Foo {}   
+impl Copy for Foo{}
+// or
+#[derive(Copy)]
+struct Bar{}
+
+// CLONE is type specific copy
+// specifies .clone()
+#[derive(Copy, Clone)]
+struct FooBar{}
+
+// Types that have Copy, must implement Clone
+// your own structs can't implement Copy, when they have items that don't implement Copy Trait
+
+// DISPLAY Trait 
+// will also automatically implement the ToString trait, allowing .to_string
+use std::fmt;
+
+impl fmt::Display for FooBar {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "({}, {})", self.x, self.y)
+    }
+}
+
+// DEREF
+struct MyBox<T>(T);
+impl<T> Deref for MyBox<T> {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0 // rust translate *y to *(y.deref)
+    }
+}
+
+    /* 
+Fehlerbehandlung
+*/
+
+/*
+Lifetime
+*/
+
+/*
+Closures
+*/
+// Closures are functions saved in a variable or passed to a function
+// comparison
+fn  add_one_v1(x: u32) -> u32 {return  x + 1;
+let add_one_v2 = |x: u32| -> u32 { x + 1 };
+let add_one_v3 = |x|             { x + 1 };
+let add_one_v4 = |x|               x + 1  ;
+}
+
+// example usage 
+fn example_closure(){
+    let mut list = vec![1, 2, 3];
+    println!("Before defining closure: {:?}", list);
+
+    let mut borrows_mutably = || list.push(7);
+
+    borrows_mutably();
+    println!("After calling closure: {:?}", list);
+}
+
+// pass to a function
+fn pass_me_a_func<F>(function : F) where F : Fn(i32) -> i32{
+    let a = function(5);
+    println!("{}", a); // prints 25
+}
+
+fn passing_a_func(){
+    let func = |i  : i32| -> i32 { i*i};
+    pass_me_a_func(func);
+}
+
+//also possible use
+fn sort(){
+    let mut list = [
+        Rectangle { width: 10, height: 1 },
+        Rectangle { width: 3, height: 5 },
+        Rectangle { width: 7, height: 12 },
+    ];
+
+    list.sort_by_key(|r| r.width);
+}
+
+// another example is found at iterators with filter() and map()
+
+
+/*
+Smart Pointers
+*/
+// Ownership and Borrowing ? what changes?`
+// Smart pointers are pointers but also have additional metadata and capabilitie
+
+// Recursive Types with Box
+// Box<T> for allocating values on the heap
+enum List { 
+    Cons(i32, List), // every Element contains a value and the next part of the List
+    Nil, // the end of the list
+}
+
+fn recursive_list(){
+     // Box is basically a pointer to a sized Object
+    // hence the Box offers "indirection", so the compiler knows about the size of the list
+    let list = List::Cons(32, Box::new(List::Cons(12, Box::new(List::Nil))));
+    let a = 45;
+    let b = Box::new(a);
+    println!("{}", *b);
+}
+
+// Reference Counting
+//Rc<T> a reference counting type that enables multiple ownership
+// It counts the amount of owners of a value
+// creating a new owner is done by cloning the reference
+use std::rc::Rc;
+enum List { 
+    Cons(i32, Rc<List>), // every Element contains a value and the next part of the List
+    Nil, // the end of the list
+}
+
+fn reference_counting(){
+    let a = Rc::new(Cons(100, Rc::new(Cons(10, Rc::new(Nil))))); // Rc with 100 has reference count of 1
+    let b = Cons(3, Rc::clone(&a));  // Rc with 100 has reference count of 2, because it was cloned
+    let c = Cons(4, Rc::clone(&a)); // Rc with 100 has reference count of 3, because it was cloned again
+}
+
+// Cell and RefCell 
+// RefCell<T> enforcing borrowing rules at runtime
+// needed for Interior Mutability, can mutate data even when there are immutable references
+// when mutably borrowed, no more borrowers are allowed
+use std::cell::RefCell;
+fn refcell() {
+    let c = RefCell::new(5);
+    {
+        let mut v=c.borrow_mut();
+        *v +=1;
+    }
+    println!("{c:?}"); // 6
+}
+
+// RefCell and Rc can be combined
+#[derive(Debug)]
+enum List {
+    Cons(i32, Rc<RefCell<List>>), // a reference counting Rc contains the refcell which is holding the next list enum
+    Nil,
+}
+
+fn combined_rc_refcell(){
+    let list = Rc::new(RefCell::new(Cons(5,Rc::new(RefCell::new(Cons(10, Rc::new(Nil)))))));
+    if let Cons(ref mut v, ref mut _r) = list.borrow_mut() {
+        *v +=3;
+    }
+}
+// Explanation by Bing Chat
+/*The borrow_mut method is called on the RefCell that wraps the list variable. 
+This returns a mutable reference to the value inside the RefCell, which is the first element of the list.
+The * operator is used to dereference this mutable reference, giving us access to the first element of the list itself.
+The if let expression is used to pattern match on this first element of the list. 
+The pattern used is Cons(ref mut v, ref mut _r), which matches against the Cons variant of the List enum.
+If the first element of the list is an instance of the Cons variant, then the values inside this variant are extracted and bound to the variables v and _r. 
+The ref mut keywords are used to indicate that these variables should be mutable references to the values inside the variant, rather than copies of those values.
+Since v is a mutable reference to the first value inside the Cons variant, we can use it to modify this value directly. 
+In this case, we add 3 to this value using the += operator.
+If the first element of the list is not an instance of the Cons variant, then nothing happens and control flow continues after the end of the if let expression. */
+/*
+OOP
+*/
+
 /*
 Other Random Stuff we used
  */
