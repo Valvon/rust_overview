@@ -396,44 +396,7 @@ fn realistic_options(option : Option<i32>) -> Option<i32> {
     }
 }
 
-//      Result<>T
-    // T and E are generics. T can contain any type of value, E can be any error.
-    //enum Result<T, E> { 
-    //    Ok(T),
-    //   Err(E),
-    //}
-
-fn result_enum(){
-    let success  : Result<i32, i32>= Ok(45); // types need to be defined
-    let error : Result<i32, i32> = Err(0);
-
-    success.is_ok(); // true
-    success.is_err(); // false
-
-    // also for Options!!
-    // not good to use
-    let value = success.unwrap();  // panics if success is Err() or None
-    let value2 = success.expect("Error message"); // same as unwrap with a message
-    let value3 = success.expect_err("OK error message"); // panics if success is Ok() or Some()
-
-    // Better use these
-    let value4 = success.unwrap_or(0);  // if there is an error, use the given value instead of panicking
-    let value5 = success.unwrap_or_default(); // if there is an error, use the default value of the data type
-    let value6 = success.unwrap_or_else(|_| 16); // if there is an error, evalutate the Closure and return that value
-}
-
-fn result_example(i : Result<i32, i32>) -> Result<i32, i32> {
-    match i {
-        Ok(i) => {
-            println!("{}", i);
-            Ok(i*2)
-        }
-        Err(..) => {
-            println!("Error");
-            Err(1)
-        }
-    }
-}
+// Result is also an enum, but treated in section about Errors
 
 /*
 Pattern Matching
@@ -820,22 +783,76 @@ impl<T> Deref for MyBox<T> {
 }
 
 /* 
-        Fehlerbehandlung TODO
+        Fehlerbehandlung 
 */
 
 
 // Recoverable / Unrecoverable
-
+fn unrecoverable() {
+    let a = vec![1,5,2,7,3,8,3];
+    let b = a[16]; // of course this panics and we can't handle it
+}
+fn recoverable(){
+    let file = File::open("gfg.txt");
+    println!("{:?}",file); // this will give a printed error of the Result<> that file has
+    // we could prevent it with a match to Ok() and Err()
+}
 //Backtrace wofür?
+// to find the origin of a panic
 
-// Makro panic!
+// the macro: panic!
+// will stop the program and clear the stack
 
 // Result
 // as we've already used the enum Result<T,E> is important for Error Handling
 
-// Standard-Types from std-Lib
+// Standard-Types from std-Lib (not sure what is meant, but)
+/*  growable Strings like: "hello world"
+    growable vectors: [1, 2, 3]
+    optional types: Option<i32>
+    error handling types: Result<i32, i32>
+    heap allocated pointers: Box<i32> */
+
 
 // unwrap and expect, when is it used?
+//      Result<>T
+    // T and E are generics. T can contain any type of value, E can be any error.
+    //enum Result<T, E> { 
+    //    Ok(T),
+    //   Err(E),
+    //}
+
+    fn result_enum(){
+        let success  : Result<i32, i32>= Ok(45); // types need to be defined
+        let error : Result<i32, i32> = Err(0);
+    
+        success.is_ok(); // true
+        success.is_err(); // false
+    
+        // also for Options!!
+        // not good to use
+        let value = success.unwrap();  // panics if success is Err() or None
+        let value2 = success.expect("Error message"); // same as unwrap with a message
+        let value3 = success.expect_err("OK error message"); // panics if success is Ok() or Some()
+    
+        // Better use these
+        let value4 = success.unwrap_or(0);  // if there is an error, use the given value instead of panicking
+        let value5 = success.unwrap_or_default(); // if there is an error, use the default value of the data type
+        let value6 = success.unwrap_or_else(|_| 16); // if there is an error, evalutate the Closure and return that value
+    }
+    
+    fn result_example(i : Result<i32, i32>) -> Result<i32, i32> {
+        match i {
+            Ok(i) => {
+                println!("{}", i);
+                Ok(i*2)
+            }
+            Err(..) => {
+                println!("Error");
+                Err(1)
+            }
+        }
+    }
 
 
 /*
@@ -992,8 +1009,10 @@ The ref mut keywords are used to indicate that these variables should be mutable
 Since v is a mutable reference to the first value inside the Cons variant, we can use it to modify this value directly. 
 In this case, we add 3 to this value using the += operator.
 If the first element of the list is not an instance of the Cons variant, then nothing happens and control flow continues after the end of the if let expression. */
+
+
 /*
-OOP
+OOP TODO
 */
 
 /*
