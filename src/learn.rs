@@ -34,7 +34,10 @@ fn operations() -> i32 { //  you can also have a return type declared
     print!("{}", int1 / int2);
     print!("{}", int1 * int2);
     print!("{}", int1 % int2);
-
+    // checked arithmetic returns Some or None (later)
+    let a = int1.checked_mul(int2); 
+    let a = int1.checked_add(int2);
+    let a = int1.checked_div(int2);  
     5 // returned value
 }
 
@@ -803,9 +806,6 @@ fn recoverable(){
 // the macro: panic!
 // will stop the program and clear the stack
 
-// Result
-// as we've already used the enum Result<T,E> is important for Error Handling
-
 // Standard-Types from std-Lib (not sure what is meant, but)
 /*  growable Strings like: "hello world"
     growable vectors: [1, 2, 3]
@@ -815,7 +815,8 @@ fn recoverable(){
 
 
 // unwrap and expect, when is it used?
-//      Result<>T
+//      
+// Especially with Result<T,E>
     // T and E are generics. T can contain any type of value, E can be any error.
     //enum Result<T, E> { 
     //    Ok(T),
@@ -828,7 +829,7 @@ fn recoverable(){
     
         success.is_ok(); // true
         success.is_err(); // false
-    
+        
         // also for Options!!
         // not good to use
         let value = success.unwrap();  // panics if success is Err() or None
@@ -852,7 +853,7 @@ fn recoverable(){
                 Err(1)
             }
         }
-    }
+    } // Option<T> is also there for error handling
 
 
 /*
@@ -866,8 +867,10 @@ fn recoverable(){
         [2] only one parameter -> return value has lifetime of that parameter
         [3] if there is self as input parameter, the output value has lifetime of self
 */
-//static has global lifetime
-static STATIC : i32 = 465;
+//static has global lifetime, here, the counter lives forever
+fn new_counter(name: String) -> &'static mut Counter {
+    &mut Counter { name: name, counter: 0 }
+}
 // anonymous lifetime TODO
 
 // this code fails without lifetime annotation, because at compile time we don't know if x or y is returned and so the borrow checker fails to know when which borrow ends
