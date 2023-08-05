@@ -666,7 +666,22 @@ Generics and Traits
 */
 
 //      Polymorphism
-//      dyn-Keyword TODO
+//      dyn-Keyword 
+// Dynamic dispatch, have a varaible that has a specific type but declare it with dyn and an upper trait
+// static dispatch is faster btw
+fn log<T: Any + Debug>(value: &T) {
+    let value_any = value as &dyn Any;
+
+    match value_any.downcast_ref::<String> {
+        Some(text) => println!("It's a string"),
+        None => println!("No String"),
+    }
+}
+
+// also possible with
+fn log_d(value_any: &dyn Any) -> &dyn Any {
+    value_any
+}
 
 //      Generic Type
 fn generic_highest(list : &[T]) -> &T{ // This won't compile, just to show concept
@@ -804,13 +819,56 @@ impl<T> Deref for MyBox<T> {
     }
 }
 
-    /* 
-Fehlerbehandlung TODO
+/* 
+        Fehlerbehandlung TODO
 */
 
+
+// Recoverable / Unrecoverable
+
+//Backtrace wofür?
+
+// Makro panic!
+
+// Result
+// as we've already used the enum Result<T,E> is important for Error Handling
+
+// Standard-Types from std-Lib
+
+// unwrap and expect, when is it used?
+
+
 /*
-Lifetime TODO
+        Lifetime 
+        you need to specify lifetime parameters for functions or structs that use references
+        &i32        // a reference
+        &'a i32     // a reference with an explicit lifetime
+        &'a mut i32 // a mutable reference with an explicit lifetime
+        Lifetime Elision Rules (automatic lifetime from compiler)
+        [1] for each parameter the compiler adds one lifetime parameter
+        [2] only one parameter -> return value has lifetime of that parameter
+        [3] if there is self as input parameter, the output value has lifetime of self
 */
+//static has global lifetime
+static STATIC : i32 = 465;
+// anonymous lifetime TODO
+
+// this code fails without lifetime annotation, because at compile time we don't know if x or y is returned and so the borrow checker fails to know when which borrow ends
+// adding it fixes the problem
+fn longest<'a>(x: &'a str, y: &'a str) -> &'a str {
+    if x.len() > y.len() {
+        x
+    } else {
+        y
+    }
+}
+
+// result is dropped after longest() and is unassociated with the lifetime 'a, this doesn't work
+fn longest<'a>(x: &str, y: &str) -> &'a str {
+    let result = String::from("really long string");
+    result.as_str() // this will fail!
+}
+
 
 /*
 Closures
@@ -958,3 +1016,4 @@ fn main() {
     print_type_of("my_variable", &my_variable);
 }
  
+// TODO question mark operator lazy and not lazy iterator behaviour
