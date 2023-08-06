@@ -876,9 +876,10 @@ fn recoverable(){
         let value3 = success.expect_err("OK error message"); // panics if success is Ok() or Some()
     
         // Better use these
+        let edge_case = 5;
         let value4 = success.unwrap_or(0);  // if there is an error, use the given value instead of panicking
         let value5 = success.unwrap_or_default(); // if there is an error, use the default value of the data type
-        let value6 = success.unwrap_or_else(|_| 16); // if there is an error, evalutate the Closure and return that value
+        let value6 = success.unwrap_or_else(|| edge_case); // if there is an error, evalutate the Closure and return that value
     }
     
     fn result_example(i : Result<i32, i32>) -> Result<i32, i32> {
