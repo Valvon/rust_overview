@@ -367,6 +367,12 @@ fn this_struct(){
         }  
     }
 }
+pub struct GnStruct(String); // Tuple Struct
+fn main(){
+    let a = GnStruct("lol".to_string());
+    println!("{}",a.0); // access tuple parameter
+    
+}
 
 //      Enums
 fn this_enum(){
@@ -635,13 +641,23 @@ fn iterators(){
     // map() -> work with values and return them (potentially modified) as a copied iterator
     // collect() the whole iterator
     let mut names2 : Vec<String> = names1.iter().map(|name| name.to_string()).collect();
+    // There also are
+    // map_or("defaul value", |item| item_mapped)
+    // map_or_else(|else| else_func(), |foo| foo_mapped)
 
-    for name in names.iter_mut(){ // this iterator allows mutable borrowing of each element
+    for name in names2.iter_mut(){ // this iterator allows mutable borrowing of each element
         let other = "no way its you, ";
         *name = format!("{}{}", other, name); // format! returns a String not str (hence the String::from in the vector declaration)
         println!("{}", name); 
     }
 
+    names2.iter_mut().map(|name| name + "l"); // iterators are lazy and do nothing. use last() to consume the iterator 
+    //btw this example is not full compilable because I am to dumb for working with Strings
+    // counting entries with fold()
+    names2.iter().fold(0, |count, _| count + 1);
+    //also relevant
+    //iter().max()
+    //iter.min()
 
 }
 
@@ -855,7 +871,12 @@ fn recoverable(){
 
 // the macro: panic!
 // will stop the program and clear the stack
-
+fn panic_hook(){ // setting a custom panic action
+    panic::set_hook(Box::new(|x| {
+        println!("Custom panic hook {x:?}");
+        ExitCode::from(42).exit_process();
+    }));
+}
 // Standard-Types from std-Lib (not sure what is meant, but)
 /*  growable Strings like: "hello world"
     growable vectors: [1, 2, 3]
@@ -1002,7 +1023,7 @@ enum List {
 
 fn recursive_list(){
      // Box is basically a pointer to a sized Object
-    // hence the Box offers "indirection", so the compiler knows about the size of the list
+    // hence the Box offers "indirection", so the compiler knows about the size of the list, value is now allocated on heap!
     let list = List::Cons(32, Box::new(List::Cons(12, Box::new(List::Nil))));
     let a = 45;
     let b = Box::new(a);
@@ -1069,6 +1090,20 @@ If the first element of the list is not an instance of the Cons variant, then no
 OOP TODO
 */
 
+// Rust is not strictly an OOP language.
+// Encapsulation: Structs
+//  invariants with predefined methods to access data
+//  Modules
+mod abstract_module{
+    pub trait Abstract{
+        // ...
+    }
+}
+// Inheritance: Traits
+// Polymorphism: via Dynamic Dispatch and Trait Objects
+
+
+
 /*
 Other Random Stuff we used
  */
@@ -1089,4 +1124,3 @@ fn main() {
     print_type_of("my_variable", &my_variable);
 }
  
-// TODO question mark operator lazy and not lazy iterator behaviour
