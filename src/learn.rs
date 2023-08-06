@@ -777,7 +777,7 @@ where // <T: Summary + Display, U: Summary + Clone>)
 
 // we of course can declare those in structs too!
 pub struct KeyLocker <T: Debug + PartialEq> {
-    name : String,
+    name : T,
 }
 
 // returned Elements may implement a trait 
