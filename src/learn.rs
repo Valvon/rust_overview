@@ -438,6 +438,11 @@ fn realistic_options(option : Option<i32>) -> Option<i32> {
     }
 }
 
+fn really_short_option(option : Option<i32>) -> Option<i32>{
+    let a = option?; // this returns None instantly, if the Opion is not of kind Some(i)
+    a + 1 //if it was Some(i) a is the value i and we can work with it
+}
+
 // Result is also an enum, but treated in section about Errors
 
 /*
@@ -481,10 +486,10 @@ fn decomposing(){
      let a = Broker::Neobroker("If condition".to_string());
      if Broker::Neobroker("If condition".to_string()) == a { // btw for == you would need to implement PartialEq
          // Neobroker Dropped at the end of the block
-        Broker::Neobroker("If body");
+        Broker::Neobroker("If body".to_string());
      }
-    match Neobroker("Dropped at end of match") {
-        b if b.0 == "Nothing" => (), // drop
+    match Broker::Neobroker("Dropped at end of match") {
+        Broker::Neobroker(b) if b == "Nothing" => (), // drop
         _ => () // drop
     }
 
@@ -728,7 +733,7 @@ impl <T: Summary + Display> C for T{
 
 }
 
-        // Trait-Bounds
+        // Trait Bounds
 // this function needs item to implement Summary
 fn needs_trait_short(item : &impl Summary) {
     println!("{}", item.summarize());
@@ -752,6 +757,11 @@ where // <T: Summary + Display, U: Summary + Clone>)
     U: Summary + Clone,
     { 
         return 5;
+}
+
+// we of course can declare those in structs too!
+pub struct KeyLocker <T: Debug + PartialEq> {
+    name : String,
 }
 
 // returned Elements may implement a trait 
