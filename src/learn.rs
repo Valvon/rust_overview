@@ -474,14 +474,15 @@ fn pattern_matching(){
 // when will data be dropped?
 fn decomposing(){
     enum Broker {
-        Neobroker {name: String},
+        Neobroker(String),
         BankDepot(String, i32),
     }
      // Neobroker Dropped once the condition has been evaluated
-    if Neobroker("If condition").0 == "If condition" {
-        // Neobroker Dropped at the end of the block
-       Neobroker("If body").0
-    }
+     let a = Broker::Neobroker("If condition".to_string());
+     if Broker::Neobroker("If condition".to_string()) == a { // btw for == you would need to implement PartialEq
+         // Neobroker Dropped at the end of the block
+        Broker::Neobroker("If body");
+     }
     match Neobroker("Dropped at end of match") {
         b if b.0 == "Nothing" => (), // drop
         _ => () // drop
