@@ -74,9 +74,15 @@ fn static_and_const(){
     static mut integervalue3 : i32 = 26;
 }
 
+// Also interesting for borrowing: 
+// Some objects need longer lifetime (statics), 
+// we can allocate memory on the heap (not stack)
+// which will be freed after the owner is dropped.
+
 /*
     Ownership und Borrowing
 */
+// Ownership is saved on the stack
 //       Normal Borrowing
 
 // This will fail
@@ -88,6 +94,18 @@ fn not_possible(){
     let text : String =String::from("jeremias"); 
     takes_ownership(text);
     println!("{}",text); // this fails as text is invalidated 
+}
+
+fn overlapping_mut_borrowing(){
+    let cnt = &mut new_counter("my counter");
+    increment(cnt);
+    increment(cnt);
+    let cnt_ref1 = &(*cnt); 
+    let cnt_ref2 = &(*cnt); 
+    as_string(cnt_ref1);
+    increment(cnt); // this fails, because cnt_ref2 is still borrowing cnt
+    as_string(cnt_ref2) // this is because cnt_ref2 is borrowed until it's last use HERE
+    //if the last line was removed, it would compile, or increment was under the alst use of cnt_ref2
 }
 
 
@@ -131,8 +149,13 @@ fn not_possible() {
 }
 
 //      Copy and Clone Trait
-// we can use these traits to automatically move/borrow
-// u8 implements Copy, could be used to implement copy on own data structures
+
+// Copy:
+// we can use this traits to automatically create a new owner to the data
+// owner holds data
+// data gets copied
+// owner1 and owner2 hold same memory address 
+// u8 implements Copy. Copy can be implemented on own data structures
 fn copy_trait(){
     let x: u8 = 123;
     let y = x;
@@ -140,16 +163,31 @@ fn copy_trait(){
     println!("x={}, y={}", x, y);
 }
 
+// Structs are moved because they don't have the Copy Trait
+struct RandomStruct{}
+fn random_func(mut x :  RandomStruct) -> RandomStruct{ x }
+fn copy_fails(){
+    let mut a = RandomStruct{};
+    random_func(a); // this is fine, but a is not the owner anymore
+    random_func(a); // this is not fine (panic), because a has no ownership rights
+} 
+// this would work if RandomStruct had Copy Trait, as random_func would get a as a copy
+// Beware of Dangling Pointers! If a was to not live longer than the functions, then:
+// owner dropped -> reference to data dropped -> data droppped (even though random_func() uses it)
+
+// Clone
+// once cloned, we have completely new owners with their own data, in no way depend on each other
 fn clone_trait(){
     // Vec<u8> implements Clone, but not Copy
     let v: Vec<u8> = vec![1, 2, 3];
     let w = v.clone();
-
+    use_v(v); // possible
     // using
     // let w = v 
     // would *move* the value, rendering v unusable.
     // println!("{}", v) would fail
 }
+
 
 
 /*
@@ -380,6 +418,7 @@ fn this_enum(){
 fn options(){
     let some_number = Some(5);
     let some_char = Some('e');
+    let a = some_char.take(); // now a is owner of Some('e') and some_char is None
     let absent_number: Option<i32> = None;
 
     some_number.is_none(); // false
@@ -831,7 +870,7 @@ fn recoverable(){
         success.is_err(); // false
         
         // also for Options!!
-        // not good to use
+        // not good to use, at least those that panic and have no alternate behaviour
         let value = success.unwrap();  // panics if success is Err() or None
         let value2 = success.expect("Error message"); // same as unwrap with a message
         let value3 = success.expect_err("OK error message"); // panics if success is Ok() or Some()
