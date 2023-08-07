@@ -284,7 +284,7 @@ fn match_statement(){
         Blue,
         Green,
     }
-    let color = Color::RGB(122, 17, 40);
+    let color = Color::Red;
     match color {
         Color::Red   => println!("The color is Red!"),
         Color::Blue  => println!("The color is Blue!"),
@@ -395,7 +395,7 @@ fn this_enum(){
         BankDepot(String, i32),
     }
     let broker1 : Broker = Broker::Neobroker{name: String::from("Trade Republic")};
-    let broker1 : Broker = Broker::BankDepot(String::from("Deutsche Bank"), 42);
+    let broker2 : Broker = Broker::BankDepot(String::from("Deutsche Bank"), 42);
 
     // we can also define methods for enums
     impl Broker {
@@ -523,8 +523,8 @@ fn decomposing(){
 
     // The temporary that stores the result of `temp()` only lives until the
     // end of the let statement in these cases.
-    let x = Some(&temp());         // ERROR
-    let x = (&temp()).use_temp();  // ERROR
+    let x = Some(&temp);         // ERROR
+    let x = (&temp).use_temp();  // ERROR
 }
 
 
@@ -735,7 +735,7 @@ pub struct Newspaper{
 
 impl Summary for Newspaper{
     fn summarize(&self) -> String { // implement a method from the trait specifically
-        format!("{}", self.headline[])
+        format!("{}", self.headline)
     }
 }
 
@@ -939,9 +939,9 @@ fn panic_hook(){ // setting a custom panic action
         [2] only one parameter -> return value has lifetime of that parameter
         [3] if there is self as input parameter, the output value has lifetime of self
 */
-//static has global lifetime, here, the counter lives forever
+//static global lifetime, here, the counter lives forever
 fn new_counter(name: String) -> &'static mut Counter {
-    &mut Counter { name: name, counter: 0 }
+    &mut Counter { name, counter: 0 }
 }
 // anonymous lifetime TODO
 
